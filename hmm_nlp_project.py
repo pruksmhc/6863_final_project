@@ -22,14 +22,15 @@ for index, row in all_data.iterrows():
     lengths.append(len(word_int))
 
 print("now fit")
-model = hmm.GaussianHMM(n_components=3)
+model = hmm.GaussianHMM(n_components=5)
 model.fit(X, lengths)
 test = "apple"
 test_int = []
 for let in test:
     test_int.append(alphabet_dict[let])
+import pdb
 pdb.set_trace()
-print(model.predict(np.array([test_int])))
+print(model.predict(np.array([test_int]), lengths=[5]))
 print(alphabet_dict)
 
 '''
