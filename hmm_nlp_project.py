@@ -28,8 +28,6 @@ test = "apple"
 test_int = []
 for let in test:
     test_int.append(alphabet_dict[let])
-import pdb
-pdb.set_trace()
 print(model.predict(np.array([test_int]), lengths=[5]))
 print(alphabet_dict)
 
