@@ -4,7 +4,7 @@ import string
 import numpy as np
 
 #helper function for evaluation
-def evaluate(prediction, target, input_X):
+def evaluate_with_output(prediction, target, input_X):
 	# prediction + target
 	print("ACCURACY" + str(sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)))
 	for index in range(len(input_X)):
@@ -19,14 +19,19 @@ def evaluate(prediction, target, input_X):
 		elif (prediction[int(index)] == 1):
 			print(n_word +"s")
 		elif (prediction[int(index)] == 3):
-			print(n.word[:-1] + "ies")
+			print(n_word[:-1] + "ies")
 		else:
 			print(n_word +"es")
+#just return accuracy for tuning on dev set
+def evaluate(prediction, target, input_x):
+	return sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)
 
 
 #import data from csv file
 model = MultinomialHMM()
-data = pd.read_csv("all_data.csv")
+data = pd.read_csv("weighted_data.csv")
+
+
 alphabet_dict = dict(zip(string.ascii_lowercase, range(1,27)))
 reverse_dict = dict(zip(range(1,27), string.ascii_lowercase))
 X = []
@@ -37,10 +42,13 @@ for index, row in data.iterrows():
 	singular = row[0]
 	plural = row[1]
 	singular_without_end = singular[:len(singular)-1]
-	if (plural == singular + 'es'): # fish, fish. box, boxes.
+	#append -es cases
+	if (plural == singular + 'es'):
 		w_class = 2
-	elif (plural == singular + 's'):
+	#simply append -s cases
+	elif (plural == singular + 's'): 
 		w_class = 1
+	#endings with -y
 	elif ((len(singular) > 1) and (plural == singular_without_end + 'ies')): # y -> ies
 		w_class = 3
 	elif (plural == singular): # don't add anything.
@@ -58,15 +66,33 @@ for index, row in data.iterrows():
 padded_X = np.zeros([len(X), len(max(X, key = lambda x: len(x)))])
 for i, j in enumerate(X):
 	padded_X[i][0:len(j)] = j
-import pdb; pdb.set_trace()
+
+
 print "TOTAL NUMBER OF SAMPLES: ", len(padded_X)
 #separate into train and validate
-train_X = padded_X[:35000]
-train_Y = Y[:35000]
-val_X = padded_X[35000:]
-val_Y = Y[35000:]
+train_X = padded_X[:10000]
+train_Y = Y[:10000]
+val_X = padded_X[10000:]
+val_Y = Y[10000:]
 
 #fit the model to training data
-model.fit(train_X, train_Y, 10)
+# model.fit(train_X, train_Y, 10)
+# print evaluate(model.predict(val_X), val_Y, val_X)
 
-evaluate(model.predict(val_X), val_Y, val_X)
+# tuning on the dev set for the optimal number of hidden states
+best_accuracy = 0
+best_number = 1
+for n in range(50):
+	model.fit(train_X, train_Y, n)
+	accuracy = evaluate(model.predict(val_X), val_Y, val_X)
+	print "n = ", n
+	print accuracy
+	if accuracy > best_accuracy:
+		best_accuracy = accuracy
+		best_number = n
+
+#evaluation on best number of hidden states
+model.fit(train_X, train_Y, best_number)
+#best accuracy: 0.48
+print "Accuray: " , evaluate(model.predict(val_X), val_Y, val_X)
+print evaluate_with_output(model.predict(val_X), val_Y, val_X)
