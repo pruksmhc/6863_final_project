@@ -52,10 +52,9 @@ val_X = np.atleast_2d(val_X).T
 #suppress deprecation warnings
 with warnings.catch_warnings():
 	warnings.simplefilter("ignore")
-	for i in range(0, 1000, 100):
 		print(" --------------")
 		print("Maximum iteration is" + str(i))
-		model = hmm.GaussianHMM(n_components = NUM_HIDDEN, n_iter=i, verbose=True) # try either Viterbi or map algorithm
+		model = hmm.GaussianHMM(n_components = NUM_HIDDEN, n_iter=i, verbose=True, algorithm='viterbi' ) # try either Viterbi or map algorithm
 		model.fit(train_X, train_lengths)
 		index = 0
 		# iterate through and see the hidden states it predicts, most likely according to observations.

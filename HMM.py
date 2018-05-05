@@ -12,15 +12,15 @@ def evaluate_with_output(prediction, target, input_X):
 		for i in input_X[int(index)]:
 			if (i != 0):
 				n_word += reverse_dict[int(i)]
-		print("singular " + n_word)
+	"""	#print("singular " + n_word)
 		if (prediction[int(index)] == 0):
-			print(n_word)
+			#print(n_word)
 		elif (prediction[int(index)] == 1):
-			print(n_word +"s")
+			#print(n_word +"s")
 		elif (prediction[int(index)] == 3):
-			print(n_word[:-1] + "ies")
+			#print(n_word[:-1] + "ies")
 		else:
-			print(n_word +"es")
+			#print(n_word +"es")"""
 	print("ACCURACY" + str(sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)))
 #just return accuracy for tuning on dev set
 def evaluate(prediction, target, input_x):
@@ -59,7 +59,7 @@ for index, row in data.iterrows():
 		for let in singular:
 			new_let = [0] * 26
 			new_let[alphabet_dict[let] - 1] = 1
-			word_int.append(new_let)
+			word_int.extend(new_let)
 		X.append(word_int)
 		Y.append(w_class)
 
