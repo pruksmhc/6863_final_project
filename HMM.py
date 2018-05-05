@@ -3,24 +3,30 @@ import pandas as pd
 import string
 import numpy as np
 
+def split_list(big_list, x):
+   return [big_list[i:i+x] for i in range(0, len(big_list), x)]
 #helper function for evaluation
 def evaluate_with_output(prediction, target, input_X):
 	# prediction + target
 	for index in range(len(input_X)):
 		n_word = ''
 		#import pdb; pdb.set_trace()
-		for i in input_X[int(index)]:
-			if (i != 0):
-				n_word += reverse_dict[int(i)]
-	"""	#print("singular " + n_word)
+		word = input_X[int(index)]
+		word_26_split = split_list(word, 26)
+		for let in word_26_split:
+			#import pdb; pdb.set_trace()
+			if (1 in let):
+				letter = let.argmax()
+				n_word += reverse_dict[int(letter) + 1]
+		print("singular " + n_word)
 		if (prediction[int(index)] == 0):
-			#print(n_word)
+			print(n_word)
 		elif (prediction[int(index)] == 1):
-			#print(n_word +"s")
+			print(n_word +"s")
 		elif (prediction[int(index)] == 3):
-			#print(n_word[:-1] + "ies")
+			print(n_word[:-1] + "ies")
 		else:
-			#print(n_word +"es")"""
+			print(n_word +"es")
 	print("ACCURACY" + str(sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)))
 #just return accuracy for tuning on dev set
 def evaluate(prediction, target, input_x):
@@ -70,7 +76,7 @@ for i, j in enumerate(X):
 	padded_X[i][0:len(j)] = j
 
 import pdb; pdb.set_trace()
-print "TOTAL NUMBER OF SAMPLES: ", len(padded_X)
+print("TOTAL NUMBER OF SAMPLES: ", len(padded_X))
 #separate into train and validate
 train_X = padded_X[:10000]
 train_Y = Y[:10000]
@@ -85,14 +91,13 @@ best_number = 1
 for n in range(50):
 	model.fit(train_X, train_Y, n)
 	accuracy = evaluate(model.predict(val_X), val_Y, val_X)
-	print "n = ", n
-	print accuracy
+	print("n = ", n)
+	print(accuracy)
 	if accuracy > best_accuracy:
 		best_accuracy = accuracy
 		best_number = n
 
 # try to figure out how the HMM is learning.
-
 #evaluation on best number of hidden states
 model.fit(train_X, train_Y, best_number)
 #best accuracy: 0.48
