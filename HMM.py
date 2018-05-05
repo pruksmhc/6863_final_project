@@ -6,7 +6,6 @@ import numpy as np
 #helper function for evaluation
 def evaluate_with_output(prediction, target, input_X):
 	# prediction + target
-	print("ACCURACY" + str(sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)))
 	for index in range(len(input_X)):
 		n_word = ''
 		#import pdb; pdb.set_trace()
@@ -22,6 +21,7 @@ def evaluate_with_output(prediction, target, input_X):
 			print(n_word[:-1] + "ies")
 		else:
 			print(n_word +"es")
+	print("ACCURACY" + str(sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)))
 #just return accuracy for tuning on dev set
 def evaluate(prediction, target, input_x):
 	return sum(1 for i,j in zip(prediction,target) if i == j)*1.0/len(prediction)
@@ -46,7 +46,7 @@ for index, row in data.iterrows():
 	if (plural == singular + 'es'):
 		w_class = 2
 	#simply append -s cases
-	elif (plural == singular + 's'): 
+	elif (plural == singular + 's'):
 		w_class = 1
 	#endings with -y
 	elif ((len(singular) > 1) and (plural == singular_without_end + 'ies')): # y -> ies
@@ -57,7 +57,9 @@ for index, row in data.iterrows():
 		word_int = []
 		plural_int = []
 		for let in singular:
-			word_int.append(alphabet_dict[let])
+			new_let = [0] * 26
+			new_let[alphabet_dict[let] - 1] = 1
+			word_int.append(new_let)
 		X.append(word_int)
 		Y.append(w_class)
 
@@ -67,7 +69,7 @@ padded_X = np.zeros([len(X), len(max(X, key = lambda x: len(x)))])
 for i, j in enumerate(X):
 	padded_X[i][0:len(j)] = j
 
-
+import pdb; pdb.set_trace()
 print "TOTAL NUMBER OF SAMPLES: ", len(padded_X)
 #separate into train and validate
 train_X = padded_X[:10000]
@@ -76,9 +78,7 @@ val_X = padded_X[10000:]
 val_Y = Y[10000:]
 
 #fit the model to training data
-# model.fit(train_X, train_Y, 10)
 # print evaluate(model.predict(val_X), val_Y, val_X)
-
 # tuning on the dev set for the optimal number of hidden states
 best_accuracy = 0
 best_number = 1
@@ -90,6 +90,8 @@ for n in range(50):
 	if accuracy > best_accuracy:
 		best_accuracy = accuracy
 		best_number = n
+
+# try to figure out how the HMM is learning.
 
 #evaluation on best number of hidden states
 model.fit(train_X, train_Y, best_number)
