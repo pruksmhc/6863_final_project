@@ -5,11 +5,15 @@ import pandas as pd
 import string
 import numpy as np
 import warnings
+from random import randint
 
-def get_predicted_plurals(model, val_X, val_lengths):
-	predictions = model.predict(val_X, val_lengths)
-	samples = model.sample(10) #generate a plural with 10 letters.
-	print(samples)
+def decode(encoding):
+	reversal_dict = dict(zip(range(1,27), string.ascii_lowercase))
+	decoding = ""
+	for num in encoding:
+		decoding += reversal_dict[num[0]]
+	return decoding
+
 #reading in data
 data = pd.read_csv("weighted_data.csv")
 alphabet_dict = dict(zip(string.ascii_lowercase, range(1,27)))
@@ -36,17 +40,32 @@ for index, row in data.iterrows():
 			val_X.append(plural_encoding)
 			val_lengths.append(len(plural_encoding))
 
-import pdb; pdb.set_trace()
-NUM_HIDDEN = 30
+
+
+
+NUM_HIDDEN = 10
 train_X = np.concatenate([sample for sample in train_X])
-train_X = np.atleast_2d(train_X).T # flatten out the plurals.
+train_X = np.atleast_2d(train_X).T
 val_X = np.concatenate([sample for sample in val_X])
 val_X = np.atleast_2d(val_X).T
 
-# for which number of hidden states is this the best.
 #suppress deprecation warnings
 with warnings.catch_warnings():
 	warnings.simplefilter("ignore")
-	model = hmm.GMMHMM(n_components = NUM_HIDDEN)
+	model = hmm.GaussianHMM(n_components = NUM_HIDDEN)
 	model.fit(train_X, train_lengths)
-	get_predicted_plurals(model, val_X, val_lengths)
+
+	index = 0
+	for length in val_lengths:
+		state_sequence =  model.predict(val_X[index: index + length], [length])
+		print "WORD: ", decode(val_X[index: index + length])
+		print "STATE SEQUENCE: ", state_sequence
+		index += length
+
+	print "WORD SAMPLES FROM FITTED MODEL:"
+	NUM_WORDS = 10
+	for i in range(NUM_WORDS):
+		(word, state_sequence) = model.sample(randint(3, 9))
+		word_array = word.astype(int)
+		if (word_array >= 1).all() and (word_array < 27).all():
+			print "WORD: " , decode(word_array)
