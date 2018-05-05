@@ -52,20 +52,24 @@ val_X = np.atleast_2d(val_X).T
 #suppress deprecation warnings
 with warnings.catch_warnings():
 	warnings.simplefilter("ignore")
-	model = hmm.GaussianHMM(n_components = NUM_HIDDEN)
-	model.fit(train_X, train_lengths)
+	for i in range(0, 1000, 100):
+		print(" --------------")
+		print("Maximum iteration is" + str(i))
+		model = hmm.GaussianHMM(n_components = NUM_HIDDEN, n_iter=i, verbose=True) # try either Viterbi or map algorithm
+		model.fit(train_X, train_lengths)
+		index = 0
+		# iterate through and see the hidden states it predicts, most likely according to observations.
+		for length in val_lengths:
+			state_sequence =  model.predict(val_X[index: index + length], [length])
+			print "WORD: ", decode(val_X[index: index + length])
+			print "STATE SEQUENCE: ", state_sequence
+			index += length
 
-	index = 0
-	for length in val_lengths:
-		state_sequence =  model.predict(val_X[index: index + length], [length])
-		print "WORD: ", decode(val_X[index: index + length])
-		print "STATE SEQUENCE: ", state_sequence
-		index += length
-
-	print "WORD SAMPLES FROM FITTED MODEL:"
-	NUM_WORDS = 10
-	for i in range(NUM_WORDS):
-		(word, state_sequence) = model.sample(randint(3, 9))
-		word_array = word.astype(int)
-		if (word_array >= 1).all() and (word_array < 27).all():
+		print "WORD SAMPLES FROM FITTED MODEL:"
+		NUM_WORDS = 10
+		for i in range(NUM_WORDS):
+			(word, state_sequence) = model.sample(randint(3, 9))
+			word_array = word.astype(int)
 			print "WORD: " , decode(word_array)
+		import pdb; pdb.set_trace()
+		print(" --------------")
